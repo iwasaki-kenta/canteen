@@ -17,7 +17,7 @@ class CanteenScheduler {
     this.account = account
     this.web3 = web3
 
-    await this.updateScheduler('olivere/docker-test-web')
+    await this.updateScheduler('rethinkdb:latest')
   }
 
   async updateScheduler(scheduledImage) {
@@ -47,14 +47,16 @@ class CanteenScheduler {
           if (!containerStatus) {
             // Create a new container if not exist.
 
+            const port = 8080
+
             container = await this.docker.createContainer({
               Image: scheduledImage,
               ExposedPorts: {
-                '10000/tcp': {}
+                [`${port}/tcp`]: {}
               },
               HostConfig: {
                 PortBindings: {
-                  '10000/tcp': [{HostPort: '10000'}]
+                  [`${port}/tcp`]: [{HostPort: port.toString()}]
                 }
               }
             })
