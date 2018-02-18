@@ -103,19 +103,18 @@ class CanteenScheduler {
           if (!containerStatus) {
             // Create a new container if not exist.
 
-            const port = 8000
+            const port = scheduledImage.includes("hello-world") ? 8000 : 8080;
 
             container = await this.docker.createContainer({
               Image: scheduledImage,
               ExposedPorts: {
-                [`8000/tcp`]: {},
-                [`8080/tcp`]: {}
+                [`${port}/tcp`]: {},
 
               },
               HostConfig: {
+                // ExposeAllPorts: true,
                 PortBindings: {
-                  [`8000/tcp`]: [{HostPort: '8000'}],
-                  [`8080/tcp`]: [{HostPort: '8080'}]
+                  [`${port}/tcp`]: [{HostPort: `${port}`}],
                 }
               }
             })
