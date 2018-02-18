@@ -25,7 +25,7 @@ contract('Canteen', accounts => {
     images.should.bignumber.be.equal(0)
   })
 
-  describe('adding and removing members work', () => { 
+  describe('Hosts and Images:', () => { 
     var details;
 
     it('test suite 1', async function () { 
@@ -68,6 +68,28 @@ contract('Canteen', accounts => {
       details[0].should.be.equal("img2");
       details = await canteen.getMemberDetails("host3");
       details[0].should.be.equal("img2");
+    })
+  })
+
+  describe('Adding Ports and Image Details:', () => { 
+    var details;
+
+    it('test suite 1', async function () { 
+      await canteen.addImage("image1", 2);
+      details = await canteen.getImageDetails("image1");
+      details[0].should.bignumber.be.equal(2);
+      details[1].should.bignumber.be.equal(0);
+      details[2].should.be.equal(true);
+      
+      await canteen.addPortForImage("image1", 8080, 80);
+      details = await canteen.getPortsForImage("image1");
+      details[0][0].should.bignumber.be.equal(8080);
+      details[0][1].should.bignumber.be.equal(80);
+
+      await canteen.addPortForImage("image1", 5000, 50);
+      details = await canteen.getPortsForImage("image1");
+      details[1][0].should.bignumber.be.equal(5000);
+      details[1][1].should.bignumber.be.equal(50);
     })
   })
 })

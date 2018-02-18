@@ -196,10 +196,6 @@ contract Canteen {
         return bestImage;
     }
     
-    function hostIsRunning(Member member) private pure returns (bool) {
-        return member.active && keccak256(member.imageName) != keccak256("");
-    }
-    
     function getMembersCount() public view returns (uint) {
         return members.length;
     }
