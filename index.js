@@ -16,8 +16,8 @@ const nodes = args.nodes && args.nodes.split(',') || []
 cluster.start(port, nodes)
 
 scheduler.start(new Web3.providers.HttpProvider('http://localhost:8545'),
-  '0x2e7dfd22586b8b48525d534f8c4b5fa97c5e8247',
-  '0xd2156d5db006d4f1ff254c1401aa2b10422d56e19388b0ad4b84fa62f10dd82b')
+  '0x345ca3e014aaf5dca488057592ee47305d9b3e10',
+  '0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3')
 
 web.start();
 

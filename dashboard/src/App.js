@@ -1,9 +1,8 @@
-import React, { ReactDOM, Component } from 'react'
+import React, { Component, ReactDOM } from 'react'
 import './App.css'
 import Web3 from 'web3'
 import styled from 'styled-components'
 import * as d3 from 'd3'
-import _ from 'lodash'
 import Canteen from './Canteen.json'
 
 const Page = styled.div`
@@ -26,10 +25,25 @@ font-size: 3em;
 
 const StatusContainer = styled.div`
 display: flex;
+flex-direction: row;
 margin-top: 0.5em;
 margin-bottom: 0.5em;
-padding: 1em;
+padding-top: 1em;
+padding-bottom: 1em;
+padding-left: 0.5em;
 background-color: #e6e6e6;
+font-size: 0.8em;
+color: black;
+
+& > *:not(:last-child) {
+margin-right: 0.5em;
+}
+`
+
+const StatusColumn = styled.div`
+flex: 1;
+width: inherit;
+height: 100%;
 `
 
 const Subtitle = styled.h3`
@@ -41,6 +55,10 @@ margin-top: 1em;
 border: 1px solid black;
 width: 960px;
 height: 500px;
+`
+
+const Label = styled.b`
+font-weight: 600;
 `
 
 class App extends Component {
@@ -66,8 +84,15 @@ class App extends Component {
   constructor(props) {
     super(props)
 
+    this.state = {
+      status: 'connecting...',
+      contract: '0x345ca3e014aaf5dca488057592ee47305d9b3e10',
+      images: [],
+      nodes: []
+    }
+
     this.web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'))
-    this.contract = new this.web3.eth.Contract(Canteen.abi, '0x2e7dfd22586b8b48525d534f8c4b5fa97c5e8247')
+    this.contract = new this.web3.eth.Contract(Canteen.abi, this.state.contract)
 
     this.width = 960
     this.height = 500
@@ -78,13 +103,11 @@ class App extends Component {
       .force('center', d3.forceCenter(this.width / 2, this.height / 2))
       .force('y', d3.forceY(0.001))
       .force('x', d3.forceX(0.001))
-
-    this.state = {
-      status: 'connecting...'
-    }
   }
 
   async componentDidMount() {
+    // Get cluster data and setup visualization.
+
     const data = await (await fetch('http://localhost:3000/cluster')).json()
 
     this.graph = d3.select(this.refs.graph)
@@ -104,7 +127,7 @@ class App extends Component {
         console.log(err)
       }
 
-      nodes.push({host: node, r: 60, ...data})
+      nodes.push({host: node, r: 80, ...data})
     }
 
     const links = []
@@ -138,17 +161,17 @@ class App extends Component {
       .attr('fill', 'black')
 
     node.append('text')
-      .attr('dx', -50)
-      .attr('dy', 8)
+      .attr('text-anchor', 'middle')
+      .attr('dy', 0)
       .style('font-family', 'ProximaNova')
-      .style('font-size', '1em')
+      .style('font-size', '1.25em')
       .style('font-weight', 600)
       .style('fill', 'white')
       .text(d => d.host)
 
     node.append('text')
-      .attr('dx', -45)
-      .attr('dy', 22)
+      .attr('text-anchor', 'middle')
+      .attr('dy', 16)
       .style('font-family', 'ProximaNova')
       .style('font-size', '0.8em')
       .style('font-weight', 600)
@@ -156,6 +179,16 @@ class App extends Component {
       .text(d => d.image)
 
     this.force.on('tick', () => this.graph.call(this.updateGraph.bind(this)))
+
+    // Get images.
+    const deployedImages = []
+
+    const imageCount = await this.contract.methods.getImagesCount().call()
+    for (let i = 0; i < imageCount; i++) {
+      deployedImages.push(await this.contract.methods.images(i).call())
+    }
+
+    this.setState({images: deployedImages, nodes})
   }
 
   updateNode(selection) {
@@ -177,7 +210,7 @@ class App extends Component {
   }
 
   render() {
-    const {status} = this.state
+    const {status, images, contract, nodes} = this.state
 
     return (
       <Page>
@@ -186,7 +219,10 @@ class App extends Component {
           <Subtitle>A decentralized container orchestrator.</Subtitle>
 
           <StatusContainer>
-            Test
+            <StatusColumn style={{flex: 2}}><Label>contract:</Label> <code>{contract}</code></StatusColumn>
+            <StatusColumn style={{flex: 2}}><Label>deployed:</Label> {images.length == 0 && 'N/A' || images.join(', ')}
+            </StatusColumn>
+            <StatusColumn><Label>num servers:</Label> {nodes.length}</StatusColumn>
           </StatusContainer>
 
           <Graph>
