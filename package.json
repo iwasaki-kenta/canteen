@@ -1,0 +1,24 @@
+{
+  "name": "canteen",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "babel-node --presets=env,stage-2 --plugins=transform-runtime index.js",
+    "deploy": "babel-node --presets=env,stage-2 --plugins=transform-runtime deploy.js"
+  },
+  "dependencies": {
+    "dockerode": "^2.5.3",
+    "ipfs": "^0.27.7",
+    "lodash": "^4.17.5",
+    "orbit-db": "^0.19.4",
+    "swim": "^0.5.0",
+    "web3": "^1.0.0-beta.30"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "babel-register": "^6.26.0"
+  }
+}
