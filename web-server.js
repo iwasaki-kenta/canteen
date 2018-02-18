@@ -1,24 +1,31 @@
 import cluster from './cluster'
+import express from 'express';
+import _ from 'lodash';
 
-const express = require('express')
-const app = express()
-const port = 3000
+class WebServer {
+  start() {
+    const app = express()
+    const port = 3000
 
-app.get('/', (request, response) => {
-  response.send(clusterDetails);
-})
+    const clusterDetails = (req, res) => {
+      const swim = cluster.getProtocol();
 
-app.get('/cluster', function(req, res) {
-	var swim = cluster.getProtocol()
-	var clusterDetails = _.map(swim.members(), member => member.host);
-    res.send(200, clusterDetails);
-});
+      const members = [swim.whoami()] + _.map(swim.members(), member => member.host);
+      res.status(200).send(members);
+    }
 
-app.listen(port, (err) => {
-  if (err) {
-    return console.log('something bad happened', err)
+    app.get('/', clusterDetails)
+    app.get('/cluster', clusterDetails);
+
+    app.listen(port, err => {
+      if (err) {
+        return console.log('something bad happened', err)
+      }
+
+      console.log(`Cluster health check web service is listening on port ${port}`)
+    })
   }
+}
 
-  console.log(`server is listening on ${port}`)
-})
+export default new WebServer();
 
