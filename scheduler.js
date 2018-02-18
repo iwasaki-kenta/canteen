@@ -75,6 +75,7 @@ class CanteenScheduler {
 
   async updateScheduler(scheduledImage) {
     this.scheduledImage = scheduledImage
+    if (this.scheduledImage.length === 0) return;
 
     this.docker.pull(scheduledImage, (err, stream) => {
       console.log('')
