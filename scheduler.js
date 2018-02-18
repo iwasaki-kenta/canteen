@@ -10,6 +10,8 @@ class CanteenScheduler {
 
     const contract = new web3.eth.Contract(Canteen.abi, contractAddress, {from: account.address})
 
+    contract.methods.addMember()
+
     const docker = new Docker({socketPath: dockerPath})
 
     this.docker = docker

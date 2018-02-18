@@ -2,8 +2,13 @@ import Swim from 'swim'
 import _ from 'lodash'
 
 class CanteenCluster {
+  getHost() {
+    return this.host
+  }
+
   start(port, nodes) {
-    const swim = new Swim({local: {host: `127.0.0.1:${port}`}})
+    this.host = `127.0.0.1:${port}`
+    const swim = new Swim({local: {host}})
 
     console.log(`Joining ${nodes.length} specified bootstrap node(s).`)
 
