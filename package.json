@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "start": "babel-node --presets=env,stage-2 --plugins=transform-runtime index.js",
-    "deploy": "babel-node --presets=env,stage-2 --plugins=transform-runtime deploy.js"
+    "deploy": "babel-node --presets=env,stage-2 --plugins=transform-runtime deploy.js",
+    "test": "truffle test",
+    "console": "truffle console"
   },
   "dependencies": {
     "dockerode": "^2.5.3",
@@ -12,13 +14,24 @@
     "lodash": "^4.17.5",
     "orbit-db": "^0.19.4",
     "swim": "^0.5.0",
-    "web3": "^1.0.0-beta.30"
+    "web3": "^1.0.0-beta.30",
+    "bignumber.js": "^4.0.4",
+    "chai": "^4.1.2"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-stage-2": "^6.24.1",
-    "babel-register": "^6.26.0"
+    "babel-register": "^6.26.0",
+    "browserify": "~14.3.0",
+    "chai": "^4.1.1",
+    "chai-as-promised": "^7.1.1",
+    "chai-bignum": "^1.0.0",
+    "chai-bignumber": "^2.0.1",
+    "mocha": "^3.5.0",
+    "truffle": "^4.0.4",
+    "web3-utils": "^1.0.0-beta.29",
+    "zeppelin-solidity": "1.6.0"
   }
 }
