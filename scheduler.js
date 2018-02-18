@@ -17,7 +17,8 @@ class CanteenScheduler {
     this.account = account
     this.web3 = web3
 
-    await this.updateScheduler('rethinkdb:latest')
+    // await this.updateScheduler('rethinkdb:latest')
+    // await this.updateScheduler('crccheck/hello-world')
   }
 
   async updateScheduler(scheduledImage) {
@@ -27,7 +28,7 @@ class CanteenScheduler {
       this.docker.modem.followProgress(stream, finished.bind(this), progress)
 
       function progress(event) {
-        console.log(`${event.status}${event.id && ` ID: ${event.id}`}`)
+        console.log(`${event.status}${event.id && ` ID: ${event.id}` || ''}`)
       }
 
       async function finished() {
@@ -47,7 +48,7 @@ class CanteenScheduler {
           if (!containerStatus) {
             // Create a new container if not exist.
 
-            const port = 8080
+            const port = 8000
 
             container = await this.docker.createContainer({
               Image: scheduledImage,
@@ -80,7 +81,7 @@ class CanteenScheduler {
           // Run the new (or paused) container.
           await container.start()
 
-          console.log('Node and scheduler is ready.')
+          console.log(`Node and scheduler is ready. Container ID is: ${container.id}`)
 
           this.container = container
         }
