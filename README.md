@@ -1,3 +1,5 @@
-# canteen
+# Canteen
 
-A decentralized Kubernetes/container orchestrator running on Ethereum. Prototype/MVP only.
+A decentralized Kubernetes/container orchestrator running on Ethereum. 
+
+Prototype/MVP only.
