@@ -18,14 +18,42 @@ class CanteenScheduler {
     this.account = account
     this.web3 = web3
 
-    await this.registerNode()
+    try {
+      await this.registerNode()
+      setInterval(async () => await this.loop(), 1000)
+    } catch (error) {
+      console.error(error)
+    }
 
     // await this.updateScheduler('rethinkdb:latest')
     // await this.updateScheduler('crccheck/hello-world')
   }
 
+  async loop() {
+    // Loops to check if scheduled image for this given node changed.
+
+    const {contract, web3} = this
+
+    const details = await contract.methods.getMemberDetails(Cluster.getHost()).call()
+    const scheduledImage = details['0']
+
+    // Check if scheduled image is available.
+    if (!details) return
+    // Check if scheduled image is unique.
+    if (this.scheduledImage === scheduledImage) return
+
+    if (this.scheduledImage && this.scheduledImage.length > 0 && scheduledImage.length === 0) {
+      // Node no longer has to schedule. Clean up.
+
+      await this.cleanup()
+    } else {
+      // Update image.
+      await this.updateScheduler(scheduledImage)
+    }
+  }
+
   async registerNode() {
-    const {contract, account} = this
+    const {contract, account, web3} = this
 
     const registerMember = contract.methods.addMember(Cluster.getHost())
 
@@ -34,17 +62,20 @@ class CanteenScheduler {
         from: account.address,
         gas: await registerMember.estimateGas()
       })
+
+      console.log('Node has been registered on Canteen.')
     } catch (error) {
       if (error.message === 'Returned error: VM Exception while processing transaction: revert') {
-        console.log('Node appears to have already been registered on Canteen. Ignoring...')
+        console.log('Node seems to have existed previously on Canteen. Reinstantiating...')
       } else {
-        throw 'Web3 error.'
-
+        throw error
       }
     }
   }
 
   async updateScheduler(scheduledImage) {
+    this.scheduledImage = scheduledImage
+
     this.docker.pull(scheduledImage, (err, stream) => {
       console.log('')
 
@@ -128,10 +159,11 @@ class CanteenScheduler {
     console.log('Scheduler stopping; stopping and removing binded container.')
 
     if (this.container) {
-      await
-        this.container.stop()
-      await
-        this.container.remove()
+      await this.container.stop()
+      await this.container.remove()
+
+      this.scheduledImage = ''
+      this.container = null
     }
   }
 }
