@@ -6,9 +6,13 @@ class CanteenCluster {
     return this.host
   }
 
+  getProtocol() {
+    return this.swim;
+  }
+
   start(port, nodes) {
     this.host = `127.0.0.1:${port}`
-    const swim = new Swim({local: {host}})
+    const swim = new Swim({local: {host: this.host}})
 
     console.log(`Joining ${nodes.length} specified bootstrap node(s).`)
 

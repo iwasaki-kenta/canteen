@@ -2,6 +2,7 @@ import Web3 from 'web3'
 import Canteen from './build/contracts/Canteen.json'
 import Docker from 'dockerode'
 import _ from 'lodash'
+import Cluster from './cluster'
 
 class CanteenScheduler {
   async start(provider, contractAddress, privateKey, dockerPath = '/var/run/docker.sock') {
@@ -10,7 +11,19 @@ class CanteenScheduler {
 
     const contract = new web3.eth.Contract(Canteen.abi, contractAddress, {from: account.address})
 
-    contract.methods.addMember()
+    const addMemberCall = contract.methods.addMember(Cluster.getHost())
+    const estimatedGas = await addMemberCall.estimateGas()
+
+    console.log(estimatedGas);
+
+    addMemberCall
+      .send({
+        from: account.address,
+        gas: estimatedGas
+      })
+      .on('confirmation', (number, receipt) => {
+        console.log('Confirmed ' + number)
+      })
 
     const docker = new Docker({socketPath: dockerPath})
 
@@ -25,7 +38,7 @@ class CanteenScheduler {
 
   async updateScheduler(scheduledImage) {
     this.docker.pull(scheduledImage, (err, stream) => {
-      console.log("");
+      console.log('')
 
       this.docker.modem.followProgress(stream, finished.bind(this), progress)
 
@@ -34,7 +47,7 @@ class CanteenScheduler {
       }
 
       async function finished() {
-        console.log("");
+        console.log('')
 
         const containers = await this.docker.listContainers()
 
