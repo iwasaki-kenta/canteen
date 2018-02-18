@@ -4,6 +4,7 @@ import Web3 from 'web3'
 import styled from 'styled-components'
 import * as d3 from 'd3'
 import Canteen from './Canteen.json'
+import _ from 'lodash'
 
 const Page = styled.div`
 background-color: white;
@@ -44,6 +45,16 @@ const StatusColumn = styled.div`
 flex: 1;
 width: inherit;
 height: 100%;
+`
+
+const FormColumn = styled.div`
+flex: 2;
+width: 100%;
+height: 100%;
+text-align: right;
+& > *{
+margin-right: 1em;
+}
 `
 
 const Subtitle = styled.h3`
@@ -88,7 +99,16 @@ class App extends Component {
       status: 'connecting...',
       contract: '0x345ca3e014aaf5dca488057592ee47305d9b3e10',
       images: [],
-      nodes: []
+      nodes: [],
+      image: {
+        add: {
+          imageName: '',
+          num: ''
+        },
+        remove: {
+          imageName: ''
+        }
+      }
     }
 
     this.web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'))
@@ -185,7 +205,13 @@ class App extends Component {
 
     const imageCount = await this.contract.methods.getImagesCount().call()
     for (let i = 0; i < imageCount; i++) {
-      deployedImages.push(await this.contract.methods.images(i).call())
+      const imageName = await this.contract.methods.images(i).call()
+      const imageDetails = await this.contract.methods.getImageDetails(imageName).call()
+
+      // Check if image is active.
+      if (imageDetails['2'] && !_.find(deployedImages, name => name === imageName)) {
+        deployedImages.push(imageName)
+      }
     }
 
     this.setState({images: deployedImages, nodes})
@@ -209,6 +235,21 @@ class App extends Component {
       .call(this.updateLink.bind(this))
   }
 
+  async addImage() {
+    const imageName = this.state.image.add.imageName
+    const reps = parseInt(this.state.image.add.num)
+
+    const account = (await this.web3.eth.getAccounts())[0]
+    await this.contract.methods.addImage(imageName, reps).send({from: account, gas: 5000000})
+  }
+
+  async removeImage() {
+    const imageName = this.state.image.remove.imageName
+
+    const account = (await this.web3.eth.getAccounts())[0]
+    await this.contract.methods.removeImage(imageName).send({from: account, gas: 5000000})
+  }
+
   render() {
     const {status, images, contract, nodes} = this.state
 
@@ -228,6 +269,30 @@ class App extends Component {
           <Graph>
             <g ref='graph'></g>
           </Graph>
+          <div>
+            <StatusContainer>
+              <StatusColumn><Label>Add Image</Label></StatusColumn>
+              <FormColumn>
+                <input type='text' placeholder={'Image name'} onChange={event => {
+                  this.setState({image: {add: {...this.state.image.add, imageName: event.target.value}}})
+                }}/>
+                <input type='text' placeholder={'# of replicas'} onChange={event => {
+                  this.setState({image: {add: {...this.state.image.add, num: event.target.value}}})
+                }}/>
+                <button onClick={this.addImage.bind(this)}> Add image</button>
+              </FormColumn>
+            </StatusContainer>
+            <StatusContainer>
+              <StatusColumn><Label>Remove Image</Label></StatusColumn>
+              <FormColumn>
+                <input type='text' placeholder={'Image name'} onChange={event => {
+                  this.setState({image: {remove: {imageName: event.target.value}}})
+                }}/>
+
+                <button onClick={this.removeImage.bind(this)}> Remove image</button>
+              </FormColumn>
+            </StatusContainer>
+          </div>
         </Container>
       </Page>
     )

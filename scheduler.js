@@ -75,7 +75,7 @@ class CanteenScheduler {
 
   async updateScheduler(scheduledImage) {
     this.scheduledImage = scheduledImage
-    if (this.scheduledImage.length === 0) return;
+    if (this.scheduledImage.length === 0) return
 
     this.docker.pull(scheduledImage, (err, stream) => {
       console.log('')
@@ -108,11 +108,14 @@ class CanteenScheduler {
             container = await this.docker.createContainer({
               Image: scheduledImage,
               ExposedPorts: {
-                [`${port}/tcp`]: {}
+                [`8000/tcp`]: {},
+                [`8080/tcp`]: {}
+
               },
               HostConfig: {
                 PortBindings: {
-                  [`${port}/tcp`]: [{HostPort: port.toString()}]
+                  [`8000/tcp`]: [{HostPort: '8000'}],
+                  [`8080/tcp`]: [{HostPort: '8080'}]
                 }
               }
             })
